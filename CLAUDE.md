@@ -159,7 +159,7 @@ The configuration ensures plugins work together without conflicts and provides e
 
 ### Formatter Architecture
 
-The project uses a comprehensive, multi-tool formatting setup via `treefmt-nix` that matches the configuration used by numtide (Blueprint creators). The formatter configuration is defined in `formatter.nix` and integrates seamlessly with Blueprint's flake structure.
+The project uses a custom Blueprint-compatible formatter that orchestrates multiple formatting tools in a priority-based pipeline. The formatter is implemented as a `writeShellApplication` in `formatter.nix` and integrates seamlessly with Blueprint's automatic discovery system.
 
 ### Formatting Tools Pipeline
 
@@ -170,34 +170,43 @@ The formatter runs tools in a specific priority order for optimal results:
 3. **alejandra** (Priority 3) - Nix code formatter for consistent style
 4. **prettier** - Multi-language formatter for JSON, Markdown, and YAML files
 
-### Formatter Configuration
+### Custom Formatter Implementation
 
 ```nix
-# formatter.nix
-{ inputs, ... }:
+# formatter.nix - Custom Blueprint-compatible formatter
 {
-  imports = [ inputs.treefmt-nix.flakeModule ];
-  perSystem = { pkgs, ... }: {
-    treefmt = {
-      projectRootFile = "flake.nix";
-      programs = {
-        deadnix = { enable = true; priority = 1; };
-        statix = { enable = true; priority = 2; };
-        alejandra = { enable = true; priority = 3; };
-        prettier.enable = true;
-      };
-      settings = {
-        global.excludes = [
-          "*.lock" "result*" ".direnv/" ".git/"
-          "*.tmp" "*.temp" ".DS_Store" "Thumbs.db"
-        ];
-        formatter.prettier.includes = [
-          "*.json" "*.md" "*.yaml" "*.yml"
-        ];
-      };
-    };
+  inputs,
+  pkgs,
+  ...
+}: let
+  formatter = pkgs.writeShellApplication {
+    name = "formatter";
+    runtimeInputs = [
+      pkgs.deadnix
+      pkgs.statix
+      pkgs.alejandra
+      pkgs.nodePackages.prettier
+    ];
+    text = ''
+      # Priority-based formatting pipeline with intelligent output
+      # Only shows messages for files that actually changed
+      while IFS= read -r -d "" file; do
+        # Create backup to detect changes
+        cp "$file" "$file.backup"
+
+        # Apply formatting tools in priority order
+        deadnix --no-lambda-pattern-names --edit "$file" 2>&1 || true
+        statix fix "$file" >/dev/null 2>&1 || true
+        alejandra "$file" >/dev/null 2>&1
+
+        # Show output only for changed files
+        if ! diff -q "$file" "$file.backup" >/dev/null 2>&1; then
+          echo "✏️  Formatted: $file"
+        fi
+        rm -f "$file.backup"
+      done < <(git ls-files -z "$@" | grep -z '\.nix$')
+    '';
   };
-}
 ```
 
 ### Formatting Commands
@@ -235,19 +244,46 @@ nix flake check              # Includes formatting validation
 - Ensures consistent documentation formatting (Markdown)
 - Handles oh-my-posh theme files and other JSON configs
 
+### Format Check Integration
+
+The formatter includes a comprehensive format check that integrates with `nix flake check`:
+
+```nix
+check = pkgs.runCommand "format-check" {
+  nativeBuildInputs = [ formatter pkgs.git pkgs.delta ];
+} ''
+  # Run formatter on project copy
+  cp --preserve=timestamps -r ${inputs.self} source
+  cd source && git init --quiet && git add .
+
+  formatter  # Run our custom formatter
+
+  # Check for changes with beautiful delta diff output
+  if ! git diff --exit-code --quiet; then
+    echo "❌ Format check failed: Files need formatting"
+    git diff | delta --side-by-side --line-numbers
+    echo "🔧 To fix: run 'nix fmt' in your project"
+    exit 1
+  fi
+'';
+```
+
 ### Integration with Blueprint
 
 The formatter leverages Blueprint's automatic flake output wiring:
 
 - `formatter.nix` is automatically detected and integrated
-- `treefmt-nix` input provides the formatting framework
+- Custom `writeShellApplication` provides the formatting framework
 - Works seamlessly with `nix fmt` command
-- Integrates into `nix flake check` for CI/CD validation
+- Format check integrates into `nix flake check` for CI/CD validation
+- Cross-platform compatibility (works on Linux and macOS)
 
-### Best Practices
+### Key Features
 
-1. **Run formatter before commits**: Ensures consistent code quality
-2. **Priority-based execution**: Tools run in optimal order to avoid conflicts
-3. **Selective file handling**: Each tool only processes relevant file types
-4. **Comprehensive exclusions**: Ignores generated files, build outputs, and temporary files
-5. **Professional standards**: Matches configuration used by numtide/nits reference implementation
+1. **Intelligent Output**: Only shows messages for files that actually changed
+2. **Priority-based Pipeline**: Tools run in optimal order (deadnix → statix → alejandra → prettier)
+3. **Blueprint Compatibility**: Works with Blueprint's automatic discovery system
+4. **Cross-Platform Support**: Functions identically on Linux and macOS
+5. **CI/CD Integration**: Format check fails builds when formatting is needed
+6. **Delta Integration**: Beautiful side-by-side diffs for format violations
+7. **Change Detection**: Uses git diff to identify actual modifications

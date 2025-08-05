@@ -1,12 +1,8 @@
 {
-  inputs,
+  pname,
   pkgs,
-  ...
+  flake,
 }: let
-  pname = "formatter";
-  # Use inputs.self for the flake reference
-  flake = inputs.self or ./.;
-
   formatter = pkgs.writeShellApplication {
     name = pname;
 
