@@ -26,31 +26,64 @@
         set -- "$prj_root"
       fi
 
-      set -x
+      echo "🔍 Checking Nix files for formatting issues..."
 
-      echo "Formatting Nix files..."
+      # Track files that were actually changed
+      files_changed=0
+      total_files=0
 
       # Format Nix files with priority pipeline: deadnix -> statix -> alejandra
       # Use process substitution to avoid subshell issues
       while IFS= read -r -d "" file; do
-        echo "Processing: $file"
+        total_files=$((total_files + 1))
+
+        # Create backup to detect changes
+        cp "$file" "$file.backup"
+
         # 1. Remove dead code first (priority 1)
-        deadnix --no-lambda-pattern-names --edit "$file" || true
+        deadnix_output=$(deadnix --no-lambda-pattern-names --edit "$file" 2>&1 || true)
+
         # 2. Fix linting issues (priority 2)
-        statix fix "$file" || true
-        # 3. Format the file (priority 3)
-        alejandra "$file"
+        statix fix "$file" >/dev/null 2>&1 || true
+
+        # 3. Format the file (priority 3) - suppress success messages
+        alejandra "$file" >/dev/null 2>&1
+
+        # Check if file was actually changed
+        if ! diff -q "$file" "$file.backup" >/dev/null 2>&1; then
+          files_changed=$((files_changed + 1))
+          echo "✏️  Formatted: $file"
+
+          # Show deadnix warnings if any unused code was found
+          if echo "$deadnix_output" | grep -q "Warning:"; then
+            echo "$deadnix_output" | grep -A 10 "Warning:" || true
+          fi
+        fi
+
+        # Clean up backup
+        rm -f "$file.backup"
       done < <(git ls-files -z "$@" | grep -z '\.nix$')
 
-      echo "Formatting other files (JSON, Markdown, YAML)..."
-
-      # Format other supported files with prettier
-      prettier --write \
+      # Format other supported files with prettier (only show if changes made)
+      echo "🔍 Checking other files (JSON, Markdown, YAML)..."
+      prettier_output=$(prettier --write \
         "**/*.{json,md,yaml,yml}" \
         --ignore-path /dev/null \
-        --log-level warn || true
+        --log-level warn 2>&1 || true)
 
-      echo "Formatting complete!"
+      # Show prettier output only if files were changed
+      if echo "$prettier_output" | grep -q "\."; then
+        echo "✏️  Prettier formatted files:"
+        echo "$prettier_output" | grep -E "\.(json|md|yaml|yml)$" || true
+      fi
+
+      # Summary
+      echo ""
+      if [ "$files_changed" -gt 0 ]; then
+        echo "✅ Formatting complete! Modified $files_changed out of $total_files Nix files."
+      else
+        echo "✅ All files already properly formatted! Checked $total_files Nix files."
+      fi
     '';
 
     meta = {
