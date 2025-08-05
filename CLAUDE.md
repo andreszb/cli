@@ -16,7 +16,7 @@ The project follows numtide/blueprint conventions with a flat, modular structure
 
 - `flake.nix` - Minimal blueprint configuration with unfree packages enabled
 - `devshells/` - Development environment definitions (maps to `devShells.*` outputs)
-- `packages/` - Custom CLI utilities as blueprint packages (maps to `packages.*` outputs)  
+- `packages/` - Custom CLI utilities as blueprint packages (maps to `packages.*` outputs)
 - `themes/` - Configuration files (oh-my-posh theme)
 
 ### Development Environments
@@ -51,14 +51,16 @@ Instead of home-manager, all tool configurations are embedded directly in the de
 ## Common Commands
 
 ### Development Shell Usage
+
 ```bash
 nix develop                    # Enter default CLI environment
-nix develop .#python          # Enter Python development environment  
+nix develop .#python          # Enter Python development environment
 nix develop .#web             # Enter web development environment
 nix develop .#tex             # Enter LaTeX environment
 ```
 
 ### Package Management
+
 ```bash
 nix build .#copyssh           # Build individual package
 nix run .#mkcd -- my-folder   # Run package directly
@@ -67,6 +69,7 @@ nix flake check               # Validate flake configuration
 ```
 
 ### Code Formatting
+
 ```bash
 nix fmt                       # Format all files (deadnix → statix → alejandra → prettier)
 nix fmt file.nix             # Format specific file
@@ -74,6 +77,7 @@ nix flake check              # Validate configuration (includes formatting check
 ```
 
 ### Custom CLI Tools (Available in all devshells)
+
 ```bash
 copyssh                       # Setup SSH keys for GitHub
 mkcd project-name             # Create directory and cd into it
@@ -82,9 +86,10 @@ cli-help                      # Show comprehensive help for all tools
 ```
 
 ### Abbreviations (Auto-expand in zsh)
+
 ```bash
 gs → git status     gp → git push      nd → nix develop
-ga → git add        gl → git pull      nb → nix build  
+ga → git add        gl → git pull      nb → nix build
 gc → git commit     d → docker         nf → nix flake
 ```
 
@@ -141,8 +146,9 @@ All custom packages use proper Nix store paths (e.g., `${pkgs.git}/bin/git`) rat
 ### Shell Plugin Architecture
 
 Zsh plugins are loaded directly from Nix store paths with proper configuration for:
+
 - `zsh-syntax-highlighting` - Syntax highlighting
-- `zsh-autosuggestions` - Command suggestions  
+- `zsh-autosuggestions` - Command suggestions
 - `zsh-autocomplete` - Live completion
 - `zsh-fzf-tab` - Enhanced tab completion with fzf
 - `zsh-abbr` - Shell abbreviations (unfree package)
@@ -160,7 +166,7 @@ The project uses a comprehensive, multi-tool formatting setup via `treefmt-nix` 
 The formatter runs tools in a specific priority order for optimal results:
 
 1. **deadnix** (Priority 1) - Removes unused Nix code and variables
-2. **statix** (Priority 2) - Nix linter that detects antipatterns and enforces best practices  
+2. **statix** (Priority 2) - Nix linter that detects antipatterns and enforces best practices
 3. **alejandra** (Priority 3) - Nix code formatter for consistent style
 4. **prettier** - Multi-language formatter for JSON, Markdown, and YAML files
 
@@ -205,22 +211,26 @@ nix flake check              # Includes formatting validation
 ### Tool-Specific Benefits
 
 **deadnix**:
+
 - Removes unused variables, functions, and imports
-- Cleans up legacy code automatically  
+- Cleans up legacy code automatically
 - Prevents code bloat and improves maintainability
 
 **statix**:
+
 - Detects ~11 Nix antipatterns and code smells
 - Enforces Nix community best practices
 - Suggests more efficient or readable code patterns
 - Examples: unused bindings, inefficient operations, deprecated syntax
 
 **alejandra**:
+
 - Consistent Nix code formatting
 - Community-preferred alternative to nixfmt
 - Handles complex nested attribute sets cleanly
 
 **prettier**:
+
 - Formats configuration files (JSON, YAML)
 - Ensures consistent documentation formatting (Markdown)
 - Handles oh-my-posh theme files and other JSON configs
@@ -228,6 +238,7 @@ nix flake check              # Includes formatting validation
 ### Integration with Blueprint
 
 The formatter leverages Blueprint's automatic flake output wiring:
+
 - `formatter.nix` is automatically detected and integrated
 - `treefmt-nix` input provides the formatting framework
 - Works seamlessly with `nix fmt` command
