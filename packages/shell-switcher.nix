@@ -1,4 +1,4 @@
-{ pkgs }:
+{pkgs}:
 pkgs.writeScriptBin "shell" ''
   #!/usr/bin/env bash
 
@@ -9,7 +9,7 @@ pkgs.writeScriptBin "shell" ''
   shell() {
       local env="$1"
       local current_dir="$(pwd)"
-      
+
       # Find cli directory using fd
       local config_dir=$(${pkgs.fd}/bin/fd -t d -H "cli" "$HOME/Dev" 2>/dev/null | while read dir; do
           if [[ -f "$dir/flake.nix" && -d "$dir/devshells" ]]; then
@@ -17,12 +17,12 @@ pkgs.writeScriptBin "shell" ''
               break
           fi
       done)
-      
+
       if [[ -z "$config_dir" ]]; then
           echo "Error: Could not find cli directory with flake.nix"
           return 1
       fi
-      
+
       case "$env" in
           "web")
               echo "🌐 Switching to web development shell..."

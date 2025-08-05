@@ -13,8 +13,7 @@
   };
 
   # Load the blueprint with unfree packages allowed
-  outputs =
-    inputs:
+  outputs = inputs:
     inputs.blueprint {
       inherit inputs;
       nixpkgs.config.allowUnfree = true;

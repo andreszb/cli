@@ -1,5 +1,4 @@
-{ pkgs }:
-''
+{pkgs}: ''
   # === Custom Functions ===
 
   # === YAZI Function ===
@@ -36,14 +35,14 @@
       "alias.lg 'log --oneline --graph --decorate'"
       "alias.undo 'reset --soft HEAD^'"
     )
-    
+
     local failed_configs=0
     for config in "''${configs[@]}"; do
       if ! git config --global $config 2>/dev/null; then
         ((failed_configs++))
       fi
     done
-    
+
     if [[ $failed_configs -gt 0 ]]; then
       echo "⚠️  Warning: Could not set $failed_configs git config settings (permission issues)" >&2
     fi

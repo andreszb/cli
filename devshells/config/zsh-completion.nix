@@ -1,5 +1,4 @@
-{ pkgs }:
-''
+{pkgs}: ''
   # === ZSH Completion Configuration ===
   # zsh-autocomplete configuration
   zstyle ':autocomplete:*' min-input 1

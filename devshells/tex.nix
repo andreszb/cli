@@ -1,4 +1,8 @@
-{ pkgs, perSystem, ... }:
+{
+  pkgs,
+  perSystem,
+  ...
+}:
 pkgs.mkShell {
   packages = with pkgs; [
     # LaTeX and document processing packages (assumes default shell already sourced)

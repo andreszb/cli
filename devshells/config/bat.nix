@@ -1,5 +1,4 @@
-{ pkgs }:
-''
+{pkgs}: ''
     # === BAT Configuration ===
     cat > "$CONFIG_DIR/bat/config" << 'EOF'
   --pager='less -FR'

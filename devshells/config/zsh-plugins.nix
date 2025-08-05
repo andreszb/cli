@@ -1,5 +1,4 @@
-{ pkgs }:
-''
+{pkgs}: ''
   # === ZSH Basic Configuration ===
   # History configuration
   HISTSIZE=10000

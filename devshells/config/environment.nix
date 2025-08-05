@@ -1,5 +1,4 @@
-{ pkgs }:
-''
+{pkgs}: ''
   # === Environment Variables ===
   export CONFIG_DIR="$HOME/.config/cli-shell-temp"
   export ZDOTDIR="$CONFIG_DIR/zsh"

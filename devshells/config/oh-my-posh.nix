@@ -1,5 +1,4 @@
-{ pkgs }:
-''
+{pkgs}: ''
   # === OH-MY-POSH ===
   eval "$(${pkgs.oh-my-posh}/bin/oh-my-posh init zsh --config $OMP_CONFIG)"
 

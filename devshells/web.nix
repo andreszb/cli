@@ -1,4 +1,8 @@
-{ pkgs, perSystem, ... }:
+{
+  pkgs,
+  perSystem,
+  ...
+}:
 pkgs.mkShell {
   packages = with pkgs; [
     # Node.js and web development packages (assumes default shell already sourced)

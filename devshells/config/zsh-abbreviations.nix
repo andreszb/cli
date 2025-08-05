@@ -1,5 +1,4 @@
-{ pkgs }:
-''
+{pkgs}: ''
   # === ZSH ABBREVIATIONS ===
   # Add common abbreviations (expand on space/enter) - suppress duplicate warnings
 
