@@ -34,12 +34,6 @@ pkgs.mkShell {
     nodePackages.http-server
   ];
 
-  env = {
-    EDITOR = "nvim";
-    VISUAL = "nvim";
-    PAGER = "bat";
-  };
-
   shellHook = ''
     echo "🌐 Web development environment loaded!"
     echo "📦 Available tools:"

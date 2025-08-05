@@ -44,12 +44,6 @@ pkgs.mkShell {
     uv # Fast Python package installer and resolver
   ];
 
-  env = {
-    EDITOR = "nvim";
-    VISUAL = "nvim";
-    PAGER = "bat";
-  };
-
   shellHook = ''
     echo "🐍 Python development environment loaded!"
     echo "📦 Available tools:"

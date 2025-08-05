@@ -8,6 +8,8 @@
     blueprint.inputs.nixpkgs.follows = "nixpkgs";
     treefmt-nix.url = "github:numtide/treefmt-nix";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
+    nvim-config.url = "github:andreszb/nvim-config";
+    nvim-config.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   # Load the blueprint with unfree packages allowed

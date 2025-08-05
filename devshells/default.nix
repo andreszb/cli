@@ -1,16 +1,13 @@
-{ pkgs, perSystem, ... }:
+{ inputs, pkgs, perSystem, ... }:
 pkgs.mkShell {
   packages =
     with pkgs;
     [
       # Core utilities
       git
-      neovim
+      inputs.nvim-config.packages.${pkgs.system}.default
       zsh
       coreutils
-
-      # Nix tools
-      alejandra
 
       # CLI tools
       claude-code
@@ -68,8 +65,8 @@ pkgs.mkShell {
     ];
 
   env = {
-    EDITOR = "nvim";
-    VISUAL = "nvim";
+    EDITOR = "nixCats";
+    VISUAL = "nixCats";
     PAGER = "bat";
   };
 
@@ -196,9 +193,10 @@ pkgs.mkShell {
     abbr add "...=cd ../.." 2>/dev/null
 
     # Editor abbreviations
-    abbr add "v=nvim" 2>/dev/null
-    abbr add "vi=nvim" 2>/dev/null
-    abbr add "vim=nvim" 2>/dev/null
+    abbr add "v=nixCats" 2>/dev/null
+    abbr add "vi=nixCats" 2>/dev/null
+    abbr add "vim=nixCats" 2>/dev/null
+    abbr add "nvim=nixCats" 2>/dev/null
 
     # Tool abbreviations
     abbr add "cat=bat" 2>/dev/null

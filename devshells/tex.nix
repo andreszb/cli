@@ -18,11 +18,6 @@ pkgs.mkShell {
     hunspellDicts.en_US
   ];
 
-  env = {
-    EDITOR = "nvim";
-    VISUAL = "nvim";
-  };
-
   shellHook = ''
     echo "📖 TeX/LaTeX development environment loaded!"
     echo "📦 Available tools:"
