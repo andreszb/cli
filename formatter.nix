@@ -1,58 +1,34 @@
-{ inputs, ... }:
 {
-  imports = [ inputs.treefmt-nix.flakeModule ];
-  perSystem =
-    { pkgs, ... }:
-    {
-      treefmt = {
-        projectRootFile = "flake.nix";
-        programs = {
-          # Nix formatters and linters (matching numtide/nits priorities)
-          deadnix = {
-            enable = true;
-            priority = 1;
-          };
-          statix = {
-            enable = true;
-            priority = 2;
-          };
-          alejandra = {
-            enable = true;
-            priority = 3;
-          };
-          # Multi-language formatter for JSON, Markdown, etc.
-          prettier.enable = true;
-        };
-        settings = {
-          global = {
-            excludes = [
-              # Build outputs and generated files
-              "*.lock"
-              "result*"
-              ".direnv/"
+  inputs,
+  pkgs,
+  ...
+}:
+pkgs.writeShellApplication {
+  name = "formatter";
 
-              # Version control
-              ".git/"
+  runtimeInputs = [
+    pkgs.deadnix  
+    pkgs.nixfmt-rfc-style
+  ];
 
-              # Temporary and cache files
-              "*.tmp"
-              "*.temp"
+  text = ''
+    set -euo pipefail
 
-              # OS-specific files
-              ".DS_Store"
-              "Thumbs.db"
-            ];
-          };
-          # Configure prettier to only handle specific file types
-          formatter.prettier = {
-            includes = [
-              "*.json"
-              "*.md"
-              "*.yaml"
-              "*.yml"
-            ];
-          };
-        };
-      };
-    };
+    # If no arguments are passed, default to formatting the whole project
+    if [[ $# = 0 ]]; then
+      prj_root=$(git rev-parse --show-toplevel 2>/dev/null || echo .)
+      set -- "$prj_root"
+    fi
+
+    set -x
+
+    deadnix --no-lambda-pattern-names --edit "$@"
+
+    # Use git to traverse since nixfmt doesn't have good traversal
+    git ls-files -z "$@" | grep --null '\.nix$' | xargs --null --no-run-if-empty nixfmt
+  '';
+
+  meta = {
+    description = "format your project";
+  };
 }

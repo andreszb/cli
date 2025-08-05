@@ -1,15 +1,4 @@
 { pkgs }:
-let
-  # Platform-specific clipboard utilities
-  clipboardUtils =
-    with pkgs;
-    [
-      xclip
-    ]
-    ++ pkgs.lib.optionals pkgs.stdenv.isLinux [
-      wl-clipboard
-    ];
-in
 pkgs.writeScriptBin "copyssh" ''
   #!/usr/bin/env zsh
 
