@@ -1,4 +1,4 @@
-{ pkgs, self, ... }:
+{ pkgs, perSystem, ... }:
 pkgs.mkShell {
   packages = with pkgs; [
     # Core utilities
@@ -14,10 +14,10 @@ pkgs.mkShell {
     claude-code
     
     # Custom blueprint packages
-    self.copyssh
-    self.mkcd
-    self.shell-switcher
-    self.cli-help
+    perSystem.self.copyssh
+    perSystem.self.mkcd
+    perSystem.self.shell-switcher
+    perSystem.self.cli-help
     
     # File management
     bat
@@ -31,7 +31,6 @@ pkgs.mkShell {
     btop
     procs
     zoxide
-    # direnv (removed - conflicts with external direnv)
     
     # Network tools
     httpie
@@ -147,17 +146,6 @@ zstyle ':autocomplete:*' ignored-input 'z ##'
 zstyle ':autocomplete:*' ignored-input 'zi ##'
 zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'eza -1 --color=always $realpath 2>/dev/null || ls -1 --color=always $realpath 2>/dev/null'
 
-# === ALIASES ===
-alias ls='eza --icons'
-alias ll='eza -la --icons --git'
-alias la='eza -a --icons'
-alias lt='eza --tree --icons'
-alias v='nvim'
-alias vi='nvim'
-alias vim='nvim'
-alias cat='bat'
-alias grep='rg'
-alias find='fd'
 
 # === FZF Configuration ===
 export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
@@ -177,52 +165,50 @@ eval "$(${pkgs.zoxide}/bin/zoxide init zsh --cmd cd)"
 # Disabled - direnv is handled externally via .envrc
 
 # === ZSH ABBREVIATIONS ===
-# Add common abbreviations (expand on space/enter)
-abbr add g git
-abbr add gs 'git status'
-abbr add ga 'git add'
-abbr add gc 'git commit'
-abbr add gp 'git push'
-abbr add gl 'git pull'
-abbr add gd 'git diff'
-abbr add gco 'git checkout'
-abbr add gb 'git branch'
-abbr add glog 'git log --oneline --graph --decorate'
+# Add common abbreviations (expand on space/enter) - suppress duplicate warnings
+abbr add "g=git" 2>/dev/null
+abbr add "gs=git status" 2>/dev/null
+abbr add "ga=git add" 2>/dev/null
+abbr add "gc=git commit" 2>/dev/null
+abbr add "gp=git push" 2>/dev/null
+abbr add "gl=git pull" 2>/dev/null
+abbr add "gd=git diff" 2>/dev/null
+abbr add "gco=git checkout" 2>/dev/null
+abbr add "gb=git branch" 2>/dev/null
+abbr add "glog=git log --oneline --graph --decorate" 2>/dev/null
 
 # Docker abbreviations
-abbr add d docker
-abbr add dc 'docker compose'
-abbr add dps 'docker ps'
-abbr add di 'docker images'
+abbr add "d=docker" 2>/dev/null
+abbr add "dc=docker compose" 2>/dev/null
+abbr add "dps=docker ps" 2>/dev/null
+abbr add "di=docker images" 2>/dev/null
 
 # System abbreviations
-abbr add ll 'eza -la --icons --git'
-abbr add la 'eza -a --icons'
-abbr add lt 'eza --tree --icons'
-abbr add cls clear
-abbr add .. 'cd ..'
-abbr add ... 'cd ../..'
+abbr add "ls=eza --icons" 2>/dev/null
+abbr add "ll=eza -la --icons --git" 2>/dev/null
+abbr add "la=eza -a --icons" 2>/dev/null
+abbr add "lt=eza --tree --icons" 2>/dev/null
+abbr add "cls=clear" 2>/dev/null
+abbr add "..=cd .." 2>/dev/null
+abbr add "...=cd ../.." 2>/dev/null
+
+# Editor abbreviations
+abbr add "v=nvim" 2>/dev/null
+abbr add "vi=nvim" 2>/dev/null
+abbr add "vim=nvim" 2>/dev/null
+
+# Tool abbreviations
+abbr add "cat=bat" 2>/dev/null
+abbr add "grep=rg" 2>/dev/null
+abbr add "find=fd" 2>/dev/null
 
 # Development abbreviations
-abbr add nd 'nix develop'
-abbr add nb 'nix build'
-abbr add nf 'nix flake'
-abbr add nfc 'nix flake check'
-abbr add nfu 'nix flake update'
+abbr add "nd=nix develop" 2>/dev/null
+abbr add "nb=nix build" 2>/dev/null
+abbr add "nf=nix flake" 2>/dev/null
+abbr add "nfc=nix flake check" 2>/dev/null
+abbr add "nfu=nix flake update" 2>/dev/null
 
-# === Auto-list files after cd ===
-_list_files_after_cd() {
-  local file_count=$(ls -1 2>/dev/null | wc -l)
-  if [ $file_count -le 20 ]; then
-    eza --icons --group-directories-first -t modified 2>/dev/null
-  else
-    eza --icons --group-directories-first -t modified 2>/dev/null | head -20
-  fi
-}
-
-chpwd() {
-  _list_files_after_cd
-}
 
 # === YAZI Function ===
 function yy() {
@@ -234,88 +220,53 @@ function yy() {
   rm -f -- "$tmp"
 }
 
-# === SSH Setup Function ===
-copyssh() {
-  local email="andreszb@me.com"
-  local ssh_key_path="$HOME/.ssh/id_ed25519"
-  local pub_key_path="$ssh_key_path.pub"
-
-  echo "🔐 Setting up SSH key for GitHub..."
-  echo "📧 Using email: $email"
-  echo ""
-
-  # Generate SSH key if it doesn't exist
-  if [[ ! -f "$ssh_key_path" ]]; then
-    echo "1️⃣  Generating SSH key..."
-    ssh-keygen -t ed25519 -C "$email" -f "$ssh_key_path"
-    echo "✅ SSH key generated"
-  else
-    echo "1️⃣  SSH key already exists at $ssh_key_path"
-  fi
-
-  # Start SSH agent
-  echo "2️⃣  Starting SSH agent..."
-  eval "$(ssh-agent -s)"
-
-  # Add key to agent
-  echo "3️⃣  Adding key to SSH agent..."
-  ssh-add "$ssh_key_path"
-  echo "📋 Keys in agent:"
-  ssh-add -l
-  echo ""
-
-  # Copy public key to clipboard
-  echo "4️⃣  Copying public key to clipboard..."
-  if command -v pbcopy >/dev/null 2>&1; then
-    cat "$pub_key_path" | pbcopy
-    echo "✅ Public key copied to clipboard (macOS)"
-  elif command -v xclip >/dev/null 2>&1; then
-    cat "$pub_key_path" | xclip -selection clipboard
-    echo "✅ Public key copied to clipboard (Linux)"
-  else
-    echo "📄 Public key content:"
-    cat "$pub_key_path"
-  fi
-  echo ""
-
-  # Set up commit signing
-  echo "5️⃣  Setting up commit signing..."
-  echo "$email $(cat $pub_key_path)" > ~/.ssh/allowed_signers
-  git config --global gpg.ssh.allowedSignersFile ~/.ssh/allowed_signers
-  echo "✅ Commit signing configured"
-  echo ""
-
-  # Instructions
-  echo "🎯 Next steps:"
-  echo "   1. Visit: https://github.com/settings/keys"
-  echo "   2. Click 'New SSH key'"
-  echo "   3. Paste the key from clipboard"
-  echo "   4. Set key type to 'Authentication Key' and optionally 'Signing Key'"
-  echo "   5. Test connection: ssh -T git@github.com"
-}
 
 # === Git Configuration ===
-git config --global user.name "Andres Zambrano"
-git config --global user.email "andreszb@me.com"
-git config --global user.signingkey ~/.ssh/id_ed25519.pub
-git config --global init.defaultBranch main
-git config --global pull.rebase true
-git config --global push.autoSetupRemote true
-git config --global core.editor nvim
-git config --global merge.tool nvim
-git config --global diff.colorMoved default
-git config --global gpg.format ssh
-git config --global gpg.ssh.allowedSignersFile ~/.ssh/allowed_signers
-git config --global commit.gpgsign true
-git config --global tag.gpgsign true
+# Configure git settings with error handling
+configure_git() {
+  local configs=(
+    "user.name 'Andres Zambrano'"
+    "user.email 'andreszb@me.com'"
+    "user.signingkey ~/.ssh/id_ed25519.pub"
+    "init.defaultBranch main"
+    "pull.rebase true"
+    "push.autoSetupRemote true"
+    "core.editor nvim"
+    "merge.tool nvim"
+    "diff.colorMoved default"
+    "gpg.format ssh"
+    "gpg.ssh.allowedSignersFile ~/.ssh/allowed_signers"
+    "commit.gpgsign true"
+    "tag.gpgsign true"
+    "alias.co checkout"
+    "alias.ci commit"
+    "alias.st status"
+    "alias.br branch"
+    "alias.lg 'log --oneline --graph --decorate'"
+    "alias.undo 'reset --soft HEAD^'"
+  )
+  
+  local failed_configs=0
+  for config in "''${configs[@]}"; do
+    if ! git config --global $config 2>/dev/null; then
+      ((failed_configs++))
+    fi
+  done
+  
+  if [[ $failed_configs -gt 0 ]]; then
+    echo "⚠️  Warning: Could not set $failed_configs git config settings (permission issues)" >&2
+  fi
+}
 
-# Git aliases
-git config --global alias.co checkout
-git config --global alias.ci commit
-git config --global alias.st status
-git config --global alias.br branch
-git config --global alias.lg "log --oneline --graph --decorate"
-git config --global alias.undo "reset --soft HEAD^"
+# Only configure git if we can write to the config file
+if [[ -w ~/.gitconfig ]] || [[ ! -f ~/.gitconfig ]]; then
+  configure_git
+elif [[ -w ~/.config/git/config ]] || [[ ! -f ~/.config/git/config ]]; then
+  mkdir -p ~/.config/git
+  configure_git
+else
+  echo "⚠️  Warning: Cannot write to git config files. Git configuration skipped." >&2
+fi
 
 echo "💡 Available commands:"
 echo "   • copyssh   - Set up SSH keys for GitHub"

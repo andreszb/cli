@@ -1,11 +1,8 @@
-{ pkgs, self, ... }:
+{ pkgs, perSystem, ... }:
 pkgs.mkShell {
   packages = with pkgs; [
-    # LaTeX full distribution
+    # LaTeX and document processing packages (assumes default shell already sourced)
     texlive.combined.scheme-full
-    
-    # Text editors and viewers
-    neovim
     
     # PDF tools
     poppler_utils  # pdfinfo, pdftotext, etc.
@@ -19,12 +16,6 @@ pkgs.mkShell {
     # Spell checking
     hunspell
     hunspellDicts.en_US
-    
-    # Custom blueprint packages
-    self.copyssh
-    self.mkcd
-    self.shell-switcher
-    self.cli-help
   ];
 
   env = {

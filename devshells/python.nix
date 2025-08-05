@@ -1,4 +1,4 @@
-{ pkgs, self, ... }:
+{ pkgs, perSystem, ... }:
 let
   # Python with essential packages for development
   pythonWithPackages = pkgs.python3.withPackages (ps: with ps; [
@@ -34,27 +34,12 @@ let
 in
 pkgs.mkShell {
   packages = with pkgs; [
-    # Python environment
+    # Python environment (assumes default shell already sourced)
     pythonWithPackages
     python3Packages.pip-tools  # pip-compile, pip-sync
     ruff  # Fast Python linter and formatter
     pyright  # Python language server
     uv  # Fast Python package installer and resolver
-    
-    # Core utilities (inherited from base)
-    git
-    neovim
-    bat
-    eza
-    fd
-    ripgrep
-    fzf
-    
-    # Custom blueprint packages
-    self.copyssh
-    self.mkcd
-    self.shell-switcher
-    self.cli-help
   ];
 
   env = {

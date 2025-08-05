@@ -1,7 +1,7 @@
-{ pkgs, self, ... }:
+{ pkgs, perSystem, ... }:
 pkgs.mkShell {
   packages = with pkgs; [
-    # Node.js and package managers
+    # Node.js and web development packages (assumes default shell already sourced)
     nodejs_20
     corepack
     
@@ -32,21 +32,6 @@ pkgs.mkShell {
     # Development servers
     nodePackages.serve
     nodePackages.http-server
-    
-    # Core utilities (inherited from base)
-    git
-    neovim
-    bat
-    eza
-    fd
-    ripgrep
-    fzf
-    
-    # Custom blueprint packages
-    self.copyssh
-    self.mkcd
-    self.shell-switcher
-    self.cli-help
   ];
 
   env = {
