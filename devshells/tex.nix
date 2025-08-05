@@ -3,16 +3,16 @@ pkgs.mkShell {
   packages = with pkgs; [
     # LaTeX and document processing packages (assumes default shell already sourced)
     texlive.combined.scheme-full
-    
+
     # PDF tools
-    poppler_utils  # pdfinfo, pdftotext, etc.
-    
+    poppler_utils # pdfinfo, pdftotext, etc.
+
     # Bibliography management
     biber
-    
+
     # Document conversion
     pandoc
-    
+
     # Spell checking
     hunspell
     hunspellDicts.en_US

@@ -1,11 +1,14 @@
 { pkgs }:
 let
   # Platform-specific clipboard utilities
-  clipboardUtils = with pkgs; [
-    xclip
-  ] ++ pkgs.lib.optionals pkgs.stdenv.isLinux [
-    wl-clipboard
-  ];
+  clipboardUtils =
+    with pkgs;
+    [
+      xclip
+    ]
+    ++ pkgs.lib.optionals pkgs.stdenv.isLinux [
+      wl-clipboard
+    ];
 in
 pkgs.writeScriptBin "copyssh" ''
   #!/usr/bin/env zsh
@@ -115,13 +118,13 @@ pkgs.writeScriptBin "copyssh" ''
       else
         echo "❌ Failed to copy to clipboard (Linux - xclip)"
       fi${pkgs.lib.optionalString pkgs.stdenv.isLinux ''
-    elif command -v ${pkgs.wl-clipboard}/bin/wl-copy >/dev/null 2>&1; then
-      if cat "$pub_key_path" | ${pkgs.wl-clipboard}/bin/wl-copy; then
-        echo "✅ Public key copied to clipboard (Wayland)"
-        copied=true
-      else
-        echo "❌ Failed to copy to clipboard (Wayland)"
-      fi''}
+        elif command -v ${pkgs.wl-clipboard}/bin/wl-copy >/dev/null 2>&1; then
+          if cat "$pub_key_path" | ${pkgs.wl-clipboard}/bin/wl-copy; then
+            echo "✅ Public key copied to clipboard (Wayland)"
+            copied=true
+          else
+            echo "❌ Failed to copy to clipboard (Wayland)"
+          fi''}
     fi
     
     if [[ "$copied" == false ]]; then

@@ -66,6 +66,13 @@ nix flake show                # List all available outputs
 nix flake check               # Validate flake configuration
 ```
 
+### Code Formatting
+```bash
+nix fmt                       # Format all files (deadnix → statix → alejandra → prettier)
+nix fmt file.nix             # Format specific file
+nix flake check              # Validate configuration (includes formatting check)
+```
+
 ### Custom CLI Tools (Available in all devshells)
 ```bash
 copyssh                       # Setup SSH keys for GitHub
@@ -141,3 +148,95 @@ Zsh plugins are loaded directly from Nix store paths with proper configuration f
 - `zsh-abbr` - Shell abbreviations (unfree package)
 
 The configuration ensures plugins work together without conflicts and provides extensive customization for completion behavior, styling, and integration.
+
+## Code Formatting and Quality
+
+### Formatter Architecture
+
+The project uses a comprehensive, multi-tool formatting setup via `treefmt-nix` that matches the configuration used by numtide (Blueprint creators). The formatter configuration is defined in `formatter.nix` and integrates seamlessly with Blueprint's flake structure.
+
+### Formatting Tools Pipeline
+
+The formatter runs tools in a specific priority order for optimal results:
+
+1. **deadnix** (Priority 1) - Removes unused Nix code and variables
+2. **statix** (Priority 2) - Nix linter that detects antipatterns and enforces best practices  
+3. **alejandra** (Priority 3) - Nix code formatter for consistent style
+4. **prettier** - Multi-language formatter for JSON, Markdown, and YAML files
+
+### Formatter Configuration
+
+```nix
+# formatter.nix
+{ inputs, ... }:
+{
+  imports = [ inputs.treefmt-nix.flakeModule ];
+  perSystem = { pkgs, ... }: {
+    treefmt = {
+      projectRootFile = "flake.nix";
+      programs = {
+        deadnix = { enable = true; priority = 1; };
+        statix = { enable = true; priority = 2; };
+        alejandra = { enable = true; priority = 3; };
+        prettier.enable = true;
+      };
+      settings = {
+        global.excludes = [
+          "*.lock" "result*" ".direnv/" ".git/"
+          "*.tmp" "*.temp" ".DS_Store" "Thumbs.db"
+        ];
+        formatter.prettier.includes = [
+          "*.json" "*.md" "*.yaml" "*.yml"
+        ];
+      };
+    };
+  };
+}
+```
+
+### Formatting Commands
+
+```bash
+nix fmt                       # Format entire project (all tools)
+nix fmt path/to/file.nix     # Format specific file
+nix flake check              # Includes formatting validation
+```
+
+### Tool-Specific Benefits
+
+**deadnix**:
+- Removes unused variables, functions, and imports
+- Cleans up legacy code automatically  
+- Prevents code bloat and improves maintainability
+
+**statix**:
+- Detects ~11 Nix antipatterns and code smells
+- Enforces Nix community best practices
+- Suggests more efficient or readable code patterns
+- Examples: unused bindings, inefficient operations, deprecated syntax
+
+**alejandra**:
+- Consistent Nix code formatting
+- Community-preferred alternative to nixfmt
+- Handles complex nested attribute sets cleanly
+
+**prettier**:
+- Formats configuration files (JSON, YAML)
+- Ensures consistent documentation formatting (Markdown)
+- Handles oh-my-posh theme files and other JSON configs
+
+### Integration with Blueprint
+
+The formatter leverages Blueprint's automatic flake output wiring:
+- `formatter.nix` is automatically detected and integrated
+- `treefmt-nix` input provides the formatting framework
+- Works seamlessly with `nix fmt` command
+- Integrates into `nix flake check` for CI/CD validation
+
+### Best Practices
+
+1. **Run formatter before commits**: Ensures consistent code quality
+2. **Priority-based execution**: Tools run in optimal order to avoid conflicts
+3. **Selective file handling**: Each tool only processes relevant file types
+4. **Comprehensive exclusions**: Ignores generated files, build outputs, and temporary files
+5. **Professional standards**: Matches configuration used by numtide/nits reference implementation

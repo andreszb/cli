@@ -4,31 +4,31 @@ pkgs.mkShell {
     # Node.js and web development packages (assumes default shell already sourced)
     nodejs_20
     corepack
-    
+
     # Package managers
     nodePackages.npm
     nodePackages.yarn
     nodePackages.pnpm
-    
+
     # Code quality and formatting
     nodePackages.eslint
     nodePackages.prettier
-    
+
     # TypeScript
     nodePackages.typescript
     nodePackages.typescript-language-server
-    
+
     # Build tools and bundlers
     nodePackages.webpack
     nodePackages.webpack-cli
-    
+
     # Development utilities
     nodePackages.nodemon
     nodePackages.concurrently
-    
+
     # Package management
     nodePackages.npm-check-updates
-    
+
     # Development servers
     nodePackages.serve
     nodePackages.http-server
