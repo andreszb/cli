@@ -8,7 +8,7 @@ pkgs.writeShellApplication {
 
   runtimeInputs = [
     pkgs.deadnix  
-    pkgs.nixfmt-rfc-style
+    pkgs.alejandra
   ];
 
   text = ''
@@ -24,8 +24,8 @@ pkgs.writeShellApplication {
 
     deadnix --no-lambda-pattern-names --edit "$@"
 
-    # Use git to traverse since nixfmt doesn't have good traversal
-    git ls-files -z "$@" | grep --null '\.nix$' | xargs --null --no-run-if-empty nixfmt
+    # Use git to traverse since alejandra doesn't have good traversal
+    git ls-files -z "$@" | grep --null '\.nix$' | xargs --null --no-run-if-empty alejandra
   '';
 
   meta = {
