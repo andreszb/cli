@@ -1,6 +1,6 @@
 {pkgs}: ''
   # === ZSH Completion Configuration ===
-  # zsh-autocomplete configuration
+  # zsh-autocomplete configuration (disabled - see zsh-plugins.nix)
   zstyle ':autocomplete:*' min-input 1
   zstyle ':autocomplete:*' delay 0.1
   zstyle ':autocomplete:*' async yes

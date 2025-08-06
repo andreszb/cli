@@ -76,7 +76,7 @@ pkgs.mkShell {
 
   shellHook = let
     # Import configuration modules
-    environmentConfig = import ./config/environment.nix {inherit pkgs;};
+    environmentConfig = import ./config/environment.nix {inherit pkgs inputs;};
     batConfig = import ./config/bat.nix {inherit pkgs;};
     zshPluginsConfig = import ./config/zsh-plugins.nix {inherit pkgs;};
     zshCompletionConfig = import ./config/zsh-completion.nix {inherit pkgs;};
@@ -106,18 +106,6 @@ pkgs.mkShell {
 
     ${ohMyPoshConfig}
     EOF
-
-          # Initialize oh-my-posh before starting zsh
-          echo "🎨 Initializing oh-my-posh theme..."
-
-          # Verify theme file exists
-          if [[ -f "$OMP_CONFIG" ]]; then
-            echo "✅ Theme file found: $OMP_CONFIG"
-          else
-            echo "❌ Theme file not found: $OMP_CONFIG"
-            echo "📁 Available themes:"
-            ls -la ${../themes/oh-my-posh}/ || echo "No themes directory found"
-          fi
 
           # Load the zsh configuration and start zsh
           exec ${pkgs.zsh}/bin/zsh

@@ -28,12 +28,6 @@
       "gpg.ssh.allowedSignersFile ~/.ssh/allowed_signers"
       "commit.gpgsign true"
       "tag.gpgsign true"
-      "alias.co checkout"
-      "alias.ci commit"
-      "alias.st status"
-      "alias.br branch"
-      "alias.lg 'log --oneline --graph --decorate'"
-      "alias.undo 'reset --soft HEAD^'"
     )
 
     local failed_configs=0
